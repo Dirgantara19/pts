@@ -1,0 +1,11 @@
+body {
+  background-image: url("AdminLTE/dist/img/avatar.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* filter: blur(5px); */
+  /* Add additional effects below */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  opacity: 0.8;
+  mix-blend-mode: overlay;
+  backdrop-filter: brightness(75%) saturate(120%) contrast(85%);
+}
