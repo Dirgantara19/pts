@@ -1,7 +1,5 @@
 {
     "require": {
-        "mpdf/mpdf": "^8.1",
-        "phpoffice/phpspreadsheet": "^1.29",
-        "servocoder/richfilemanager": "^2.6"
+        "phpoffice/phpspreadsheet": "^1.29"
     }
 }
