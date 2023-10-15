@@ -71,19 +71,23 @@ class Auth extends MY_Controller
 					redirect('auth/login', 'refresh');
 				}
 			} else {
-				if (validation_errors()) {
-					$errors = $this->form_validation->error_array();
+				$error = [
+					'identity' => $this->form_validation->error('identity'),
+					'password' => $this->form_validation->error('password'),
+				];
 
-					foreach ($errors as $field => $message) {
-						$error = [
-							$field => $message,
-						];
+				if (!empty($error['identity']) || !empty($error['password'])) {
+					$errorMessages = [];
 
-						$this->sweetalert->setToastNew('error', $error, $this->data['title_toastr']);
+					foreach ($error as $errorMessage) {
+						if (!empty($errorMessage)) {
+							$errorMessages[] = $errorMessage;
+						}
 					}
 
-					$error = [];
+					$this->sweetalert->setToastNew('error', $errorMessages, $this->data['title_toastr']);
 				}
+
 
 
 				$this->data['identity'] = array(
@@ -159,7 +163,21 @@ class Auth extends MY_Controller
 				$this->data['identity_label'] = $this->lang->line('forgot_password_email_identity_label');
 			}
 
-			$this->data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+			$error = [
+				'identity' => $this->form_validation->error('identity'),
+			];
+
+			if (!empty($error['identity'])) {
+				$errorMessages = [];
+
+				foreach ($error as $errorMessage) {
+					if (!empty($errorMessage)) {
+						$errorMessages[] = $errorMessage;
+					}
+				}
+
+				$this->sweetalert->setToastNew('error', $errorMessages, $this->data['title_toastr']);
+			}
 
 			$this->data['page_content'] = 'auth/forgot_password';
 			$this->render();

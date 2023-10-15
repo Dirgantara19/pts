@@ -18,7 +18,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
             echo form_open('auth/forgot_password', 'class="form-horizontal"');
             ?> <div class="input-group mb-3">
                 <?php
-                echo form_input($identity, '', 'class="form-control" placeholder="Email"');
+                echo form_input($identity, '', 'class="form-control" placeholder="Identity"');
                 ?>
                 <div class="input-group-append">
                     <div class="input-group-text">

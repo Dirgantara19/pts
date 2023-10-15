@@ -1,21 +1,21 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 /**
-* Name:  Auth Lang - English
-*
-* Author: Ben Edmunds
-* 		  ben.edmunds@gmail.com
-*         @benedmunds
-*
-* Author: Daniel Davis
-*         @ourmaninjapan
-*
-* Location: http://github.com/benedmunds/ion_auth/
-*
-* Created:  03.09.2013
-*
-* Description:  English language file for Ion Auth example views
-*
-*/
+ * Name:  Auth Lang - English
+ *
+ * Author: Ben Edmunds
+ * 		  ben.edmunds@gmail.com
+ *         @benedmunds
+ *
+ * Author: Daniel Davis
+ *         @ourmaninjapan
+ *
+ * Location: http://github.com/benedmunds/ion_auth/
+ *
+ * Created:  03.09.2013
+ *
+ * Description:  English language file for Ion Auth example views
+ *
+ */
 
 // Errors
 $lang['error_csrf'] = 'This form post did not pass our security checks.';
@@ -23,8 +23,8 @@ $lang['error_csrf'] = 'This form post did not pass our security checks.';
 // Login
 $lang['login_heading']         = 'Login';
 $lang['login_subheading']      = 'Please login with your email/username and password below.';
-$lang['login_identity_label']  = 'Email/Username:';
-$lang['login_password_label']  = 'Password:';
+$lang['login_identity_label']  = 'Identity';
+$lang['login_password_label']  = 'Password';
 $lang['login_remember_label']  = 'Remember Me';
 $lang['login_submit_btn']      = 'Login';
 $lang['login_forgot_password'] = 'Forgot your password?';
