@@ -71,13 +71,18 @@ class Auth extends MY_Controller
 					redirect('auth/login', 'refresh');
 				}
 			} else {
-				$error = [
-					'identity' => $this->form_validation->error('identity'),
-					'password' => $this->form_validation->error('password'),
-				];
-
 				if (validation_errors()) {
-					$this->sweetalert->setToastNew('error', $error, $this->data['title_toastr']);
+					$errors = $this->form_validation->error_array();
+
+					foreach ($errors as $field => $message) {
+						$error = [
+							$field => $message,
+						];
+
+						$this->sweetalert->setToastNew('error', $error, $this->data['title_toastr']);
+					}
+
+					$error = [];
 				}
 
 
