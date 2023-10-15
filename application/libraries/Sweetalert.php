@@ -65,6 +65,8 @@ class Sweetalert
       } else {
         echo "toastr['" . $tipe . "']('" . $pesan . "','" . $judul . "');";
       }
+
+      $this->CI->session->unset_tempdata('SwalToast');
     }
   }
 }
