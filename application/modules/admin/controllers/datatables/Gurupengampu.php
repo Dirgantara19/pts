@@ -183,33 +183,54 @@ class Gurupengampu extends MY_Controller
     public function delete()
     {
         $id = $this->input->post('id', true);
-        $users_mapel_kelas = $this->crud->table($this->table)->get_by_key(['id' => $id]);
 
-        if ($users_mapel_kelas) {
-            $this->crud->table($this->table)->delete(['id' => $id]);
-            $status = ['success' => 'Success: Data deleted!'];
-        } else {
-            $status = ['error' => 'Error: Data not deleted!'];
+        $this->db->trans_start();
+
+        $status = ['error' => 'Error: Data not deleted!'];
+
+        if ($id) {
+            $this->db->where('id', $id);
+            $this->db->delete($this->table);
+
+            $deleted_rows = $this->db->affected_rows();
+
+            if ($deleted_rows > 0) {
+                $status = ['success' => 'Success: Data deleted!'];
+            }
         }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $status = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        }
+
         echo json_encode($status);
     }
 
     public function bulk_delete()
     {
         $array_id = $this->input->post('array_id');
-        foreach ($array_id as $id) {
-            $delete[] = $this->crud->table($this->table)->get_by_key(['id' => $id]);
 
-            if ($delete) {
-                foreach ($delete as $data) {
-                    $this->crud->table($this->table)->delete(['id' => $data->id]);
-                }
+        $this->db->trans_start();
 
-                $status = ['success' => 'Success: Data deleted!'];
-            } else {
-                $status = ['error' => 'Error: Data not deleted!'];
-            }
+        $status = ['error' => 'Error: Data not deleted!'];
+
+        if (!empty($array_id)) {
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table);
         }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $status = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $status = ['success' => 'Success: Data deleted!'];
+        }
+
         echo json_encode($status);
     }
 }

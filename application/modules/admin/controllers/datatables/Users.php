@@ -259,7 +259,7 @@ class Users extends MY_Controller
 
 
 	// delete the user
-	public function delete($id = NULL)
+	public function delete()
 	{
 		$id = $this->input->post('id');
 
@@ -267,73 +267,66 @@ class Users extends MY_Controller
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = ['success' => false, 'message' => validation_errors()];
-			echo json_encode($response);
 		} else {
 			if ($id) {
-				$raport = $this->crud->table($this->table_relasi2)->get_by_key_with_result(['user_id' => $id]);
-				if (!empty($raport)) {
-					foreach ($raport as $data) {
-						$this->crud->table($this->table_relasi2)->delete(['user_id' => $data->user_id]);
-					}
-				}
+				$this->db->trans_start();
 
-				$users_mapel_kelas = $this->crud->table($this->table_relasi1)->get_by_key_with_result(['user_id' => $id]);
+				$this->db->where('user_id', $id);
+				$this->db->delete($this->table_relasi2);
 
-				if (!empty($users_mapel_kelas)) {
-					foreach ($users_mapel_kelas as $data) {
-						$this->crud->table($this->table_relasi1)->delete(['user_id' => $data->user_id]);
-					}
-				}
+				$this->db->where('user_id', $id);
+				$this->db->delete($this->table_relasi1);
+
 				$this->ion_auth->delete_user($id);
-				$response = ['success' => true, 'message' => $this->ion_auth->messages()];
+
+				$this->db->trans_complete();
+
+				if ($this->db->trans_status() === FALSE) {
+					$this->db->trans_rollback();
+					$response = ['success' => false, 'message' => 'Error: Data not deleted due to a transaction error!'];
+				} else {
+					$response = ['success' => true, 'message' => $this->ion_auth->messages()];
+				}
 			} else {
 				$response = ['success' => false, 'message' => $this->ion_auth->errors()];
 			}
-
-			echo json_encode($response);
 		}
-	}
 
+		echo json_encode($response);
+	}
 
 	public function bulk_delete()
 	{
 		$array_id = $this->input->post('array_id');
-		if ($array_id) {
-			foreach ($array_id as $id) {
-				$delete = $this->ion_auth->delete_user($id);
 
-				if ($delete) {
+		$this->db->trans_start();
 
-					$users_mapel_kelas[] = $this->crud->table($this->table_relasi1)->get_by_key(['mapel_id' => $id]);
-					$raport[] = $this->crud->table($this->table_relasi2)->get_by_key_with_result(['mapel_id' => $id]);
-					if (!empty($users_mapel_kelas)) {
-						foreach ($users_mapel_kelas as $data) {
-							$this->crud->table($this->table_relasi1)->delete(['mapel_id' => $data->mapel_id]);
-						}
-					}
+		$response = ['error' => 'Error: Data not deleted!'];
 
-					if (!empty($raport)) {
-						foreach ($raport as $subarray) {
-							foreach ($subarray as $data) {
-								$this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-							}
-						}
-					}
+		if (!empty($array_id)) {
+			$this->db->where_in('user_id', $array_id);
+			$this->db->delete($this->table_relasi2);
 
-					$response = ['success' => 'Success: Data deleted!'];
-				} else {
-					$response = ['error' => 'Error: Data cant deleted!'];
-				}
-			}
-		} else {
+			$this->db->where_in('user_id', $array_id);
+			$this->db->delete($this->table_relasi1);
 
-			$response = ['error' => 'Error: Cant found id'];
+			$this->db->where_in('id', $array_id);
+			$this->db->delete($this->table);
 		}
 
+		$this->db->trans_complete();
 
+		if ($this->db->trans_status() === FALSE) {
+			$this->db->trans_rollback();
+			$response = ['error' => 'Error: Data not deleted due to a transaction error!'];
+		} else {
+			$response = ['success' => 'Success: Data deleted!'];
+		}
 
 		echo json_encode($response);
 	}
+
+
 
 
 

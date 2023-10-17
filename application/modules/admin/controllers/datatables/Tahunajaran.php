@@ -62,48 +62,57 @@ class Tahunajaran extends MY_Controller
     public function delete()
     {
         $id = $this->input->post('id', true);
-        $mapel = $this->crud->table($this->table)->get_by_key(['id' => $id]);
-        $raport = $this->crud->table($this->table_relasi)->get_by_key_with_result(['tahun_id' => $id]);
 
+        $this->db->trans_start();
 
-        if ($mapel) {
+        $status = ['error' => 'Error: Data not deleted!'];
 
-            if (!empty($raport)) {
-                foreach ($raport as $data) {
-                    $this->crud->table($this->table_relasi)->delete(['tahun_id' => $data->tahun_id]);
-                }
-            }
-            $this->crud->table($this->table)->delete(['id' => $id]);
-            $status = ['success' => 'Success: Data deleted!'];
-        } else {
-            $status = ['error' => 'Error: Data not deleted!'];
+        if ($id) {
+            $this->db->where('id', $id);
+            $this->db->delete($this->table);
+
+            $this->db->where('tahun_id', $id);
+            $this->db->delete($this->table_relasi);
         }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $status = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $status = ['success' => 'Success: Data deleted!'];
+        }
+
+
         echo json_encode($status);
     }
 
     public function bulk_delete()
     {
         $array_id = $this->input->post('array_id');
-        foreach ($array_id as $id) {
-            $tahun[] = $this->crud->table($this->table)->get_by_key(['id' => $id]);
-            $raport[] = $this->crud->table($this->table_relasi)->get_by_key_with_result(['tahun_id' => $id]);
 
-            if ($tahun) {
-                if (!empty($raport)) {
-                    foreach ($raport as $subarray) {
-                        foreach ($subarray as $data) {
-                            $this->crud->table($this->table_relasi)->delete(['tahun_id' => $data->tahun_id]);
-                        }
-                    }
-                }
-                foreach ($tahun as $data) {
-                    $this->crud->table($this->table)->delete(['id' => $data->id]);
-                }
-                $status = ['success' => 'Success: Data deleted!'];
-            } else {
-                $status = ['error' => 'Error: Data not deleted!'];
-            }
+        $this->db->trans_start();
+
+        $status = ['error' => 'Error: Data not deleted!'];
+
+        if (!empty($array_id)) {
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table);
+
+            $this->db->where_in('tahun_id', $array_id);
+            $this->db->delete($this->table_relasi);
         }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $status = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $status = ['success' => 'Success: Data deleted!'];
+        }
+
         echo json_encode($status);
     }
 }

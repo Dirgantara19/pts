@@ -64,10 +64,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
             <!-- /.social-auth-links -->
 
-            <p class="mb-1">
-                <a href="<?= base_url(); ?>auth/forgot_password">I forgot my password</a>
-            </p>
-
         </div>
         <!-- /.card-body -->
     </div>

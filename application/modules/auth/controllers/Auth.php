@@ -139,73 +139,88 @@ class Auth extends MY_Controller
 	}
 
 
-	public function forgot_password()
-	{
-		$this->data['subtitle'] = $this->lang->line('forgot_password_heading');
+	// public function forgot_password()
+	// {
+	// 	$this->data['subtitle'] = $this->lang->line('forgot_password_heading');
 
-		if ($this->config->item('identity', 'ion_auth') != 'email') {
-			$this->form_validation->set_rules('identity', 'lang:forgot_password_identity_label', 'required');
-		} else {
-			$this->form_validation->set_rules('identity', 'lang:forgot_password_validation_email_label', 'required|valid_email');
-		}
+	// 	if ($this->config->item('identity', 'ion_auth') != 'email') {
+	// 		$this->form_validation->set_rules('identity', 'lang:forgot_password_identity_label', 'required');
+	// 	} else {
+	// 		$this->form_validation->set_rules('identity', 'lang:forgot_password_validation_email_label', 'required|valid_email');
+	// 	}
 
-		if ($this->form_validation->run() == FALSE) {
-			$this->data['type'] = $this->config->item('identity', 'ion_auth');
+	// 	if ($this->form_validation->run() == FALSE) {
+	// 		$this->data['type'] = $this->config->item('identity', 'ion_auth');
 
-			$this->data['identity'] = array(
-				'name' => 'identity',
-				'id'   => 'identity'
-			);
+	// 		$this->data['identity'] = array(
+	// 			'name' => 'identity',
+	// 			'id'   => 'identity'
+	// 		);
 
-			if ($this->config->item('identity', 'ion_auth') != 'email') {
-				$this->data['identity_label'] = $this->lang->line('forgot_password_identity_label');
-			} else {
-				$this->data['identity_label'] = $this->lang->line('forgot_password_email_identity_label');
-			}
+	// 		if ($this->config->item('identity', 'ion_auth') != 'email') {
+	// 			$this->data['identity_label'] = $this->lang->line('forgot_password_identity_label');
+	// 		} else {
+	// 			$this->data['identity_label'] = $this->lang->line('forgot_password_email_identity_label');
+	// 		}
 
-			$error = [
-				'identity' => $this->form_validation->error('identity'),
-			];
+	// 		$error = [
+	// 			'identity' => $this->form_validation->error('identity'),
+	// 		];
 
-			if (!empty($error['identity'])) {
-				$errorMessages = [];
+	// 		if (!empty($error['identity'])) {
+	// 			$errorMessages = [];
 
-				foreach ($error as $errorMessage) {
-					if (!empty($errorMessage)) {
-						$errorMessages[] = $errorMessage;
-					}
-				}
+	// 			foreach ($error as $errorMessage) {
+	// 				if (!empty($errorMessage)) {
+	// 					$errorMessages[] = $errorMessage;
+	// 				}
+	// 			}
 
-				$this->sweetalert->setToastNew('error', $errorMessages, $this->data['title_toastr']);
-			}
+	// 			$this->sweetalert->setToastNew('error', $errorMessages, $this->data['title_toastr']);
+	// 		}
 
-			$this->data['page_content'] = 'auth/forgot_password';
-			$this->render();
-		} else {
-			$identity_column = $this->config->item('identity', 'ion_auth');
-			$identity = $this->ion_auth->where($identity_column, $this->input->post('identity'))->users()->row();
+	// 		$this->data['page_content'] = 'auth/forgot_password';
+	// 		$this->render();
+	// 	} else {
+	// 		// Retrieve identity columns and check for their existence
+	// 		$identity_admin1 = $this->config->item('identity_admin1', 'ion_auth');
+	// 		$identity_admin2 = $this->config->item('identity_admin2', 'ion_auth');
+	// 		$identity_teacher = $this->config->item('identity_teacher', 'ion_auth');
 
-			if (empty($identity)) {
-				if ($this->config->item('identity', 'ion_auth') != 'email') {
-					$this->ion_auth->set_error('forgot_password_identity_not_found');
-				} else {
-					$this->ion_auth->set_error('forgot_password_email_not_found');
-				}
+	// 		$identity_col_admin_1 = $this->ion_auth->where($identity_admin1, $this->input->post('identity'))->users()->row();
+	// 		$identity_col_admin_2 = $this->ion_auth->where($identity_admin2, $this->input->post('identity'))->users()->row();
+	// 		$identity_col_teacher = $this->ion_auth->where($identity_teacher, $this->input->post('identity'))->users()->row();
 
-				$this->sweetalert->setToastNew('error', $this->ion_auth->messages(), $this->data['title_toastr']);
-				redirect('auth/forgot_password', 'refresh');
-			}
+	// 		if (empty($identity_col_admin_1) && empty($identity_col_admin_2) && empty($identity_col_teacher)) {
+	// 			if ($this->config->item('identity', 'ion_auth') != 'email') {
+	// 				$this->ion_auth->set_error('forgot_password_identity_not_found');
+	// 			} else {
+	// 				$this->ion_auth->set_error('forgot_password_email_not_found');
+	// 			}
 
-			// run the forgotten password method to email an activation code to the user
-			$forgotten = $this->ion_auth->forgotten_password($identity->{$this->config->item('identity', 'ion_auth')});
+	// 			$this->sweetalert->setToastNew('error', $this->ion_auth->messages(), $this->data['title_toastr']);
+	// 			redirect('auth/forgot_password', 'refresh');
+	// 		} else {
+	// 			// Try to send forgotten password emails
+	// 			$successful = false;
 
-			if ($forgotten) {
-				$this->sweetalert->setToastNew('success', $this->ion_auth->messages(), $this->data['title_toastr'],);
-				redirect('auth/login', 'refresh');
-			} else {
-				$this->sweetalert->setToastNew('error', $this->ion_auth->messages(), $this->data['title_toastr']);
-				redirect('auth/forgot_password', 'refresh');
-			}
-		}
-	}
+	// 			if (!empty($identity_col_admin_1)) {
+	// 				$successful = $this->ion_auth->forgotten_password($identity_col_admin_1->{$identity_admin1});
+	// 			} elseif (!empty($identity_col_admin_2)) {
+	// 				$successful = $this->ion_auth->forgotten_password($identity_col_admin_2->{$identity_admin2});
+	// 			} elseif (!empty($identity_col_teacher)) {
+	// 				$successful = $this->ion_auth->forgotten_password($identity_col_teacher->{$identity_teacher});
+	// 			}
+
+	// 			// Check if email sending was successful
+	// 			if ($successful) {
+	// 				$this->sweetalert->setToastNew('success', $this->ion_auth->messages(), $this->data['title_toastr']);
+	// 				redirect('auth/login', 'refresh');
+	// 			} else {
+	// 				$this->sweetalert->setToastNew('error', $this->ion_auth->errors(), $this->data['title_toastr']);
+	// 				redirect('auth/forgot_password', 'refresh');
+	// 			}
+	// 		}
+	// 	}
+	// }
 }

@@ -72,25 +72,29 @@ class Mapel extends MY_Controller
     public function delete()
     {
         $id = $this->input->post('id', true);
-        $mapel = $this->crud->table($this->table)->get_by_key(['id' => $id]);
-        $users_mapel_kelas = $this->crud->table($this->table_relasi1)->get_by_key_with_result(['mapel_id' => $id]);
-        $raport = $this->crud->table($this->table_relasi2)->get_by_key_with_result(['mapel_id' => $id]);
 
-        if (!empty($mapel)) {
-            if (!empty($users_mapel_kelas)) {
-                foreach ($users_mapel_kelas as $data) {
-                    $this->crud->table($this->table_relasi1)->delete(['mapel_id' => $data->mapel_id]);
-                }
-            }
-            if (!empty($raport)) {
-                foreach ($raport as $data) {
-                    $this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-                }
-            }
-            $this->crud->table($this->table)->delete(['id' => $id]);
-            $response = ['success' => 'Success: Data deleted!'];
+        $this->db->trans_start();
+
+        $response = ['error' => 'Error: Data cannot be deleted!'];
+
+        if ($id) {
+            $this->db->where('mapel_id', $id);
+            $this->db->delete($this->table_relasi1);
+
+            $this->db->where('mapel_id', $id);
+            $this->db->delete($this->table_relasi2);
+
+            $this->db->where('id', $id);
+            $this->db->delete($this->table);
+        }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $response = ['error' => 'Error: Data not deleted due to a transaction error!'];
         } else {
-            $response = ['error' => 'Error: Data cant deleted!'];
+            $response = ['success' => 'Success: Data deleted!'];
         }
         echo json_encode($response);
     }
@@ -98,36 +102,34 @@ class Mapel extends MY_Controller
     public function bulk_delete()
     {
         $array_id = $this->input->post('array_id');
-        foreach ($array_id as $id) {
-            $mapel[] = $this->crud->table($this->table)->get_by_key(['id' => $id]);
-            $users_mapel_kelas[] = $this->crud->table($this->table_relasi1)->get_by_key(['mapel_id' => $id]);
-            $raport[] = $this->crud->table($this->table_relasi2)->get_by_key_with_result(['mapel_id' => $id]);
 
-            if (!empty($mapel)) {
-                if (!empty($users_mapel_kelas)) {
-                    foreach ($users_mapel_kelas as $data) {
-                        $this->crud->table($this->table_relasi1)->delete(['mapel_id' => $data->mapel_id]);
-                    }
-                }
+        $this->db->trans_start();
 
-                if (!empty($raport)) {
-                    foreach ($raport as $subarray) {
-                        foreach ($subarray as $data) {
-                            $this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-                        }
-                    }
-                }
+        $response = ['error' => 'Error: Data cannot be deleted!'];
 
-                $this->crud->table($this->table)->delete(['id' => $data->id]);
+        if (!empty($array_id)) {
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table_relasi1);
 
-                $response = ['success' => 'Success : Data deleted!'];
-            } else {
-                $response = ['error' => 'Error: Data cant deleted!'];
-            }
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table_relasi2);
+
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table);
+        }
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $response = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $response = ['success' => 'Success: Data deleted!'];
         }
 
         echo json_encode($response);
     }
+
 
     public function import()
     {

@@ -865,7 +865,6 @@ class Ion_auth_model extends CI_Model
 
 		// Users table.
 		$data = array(
-			$this->identity_column   => $identity,
 			'username'   => $identity,
 			'password'   => $password,
 			'email'      => $email,
@@ -954,7 +953,6 @@ class Ion_auth_model extends CI_Model
 			$password = $this->hash_password($data['password'], $salt);
 
 			$users_data[] = array(
-				$this->identity_column => $data['identity'],
 				'username' => $identity,
 				'password' => $password,
 				'email' => $data['email'],

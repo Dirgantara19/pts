@@ -77,93 +77,71 @@ class Kelas extends MY_Controller
     public function delete()
     {
         $id = $this->input->post('id');
+
+        $this->db->trans_start();
+
+        $response = ['error' => 'Error: Data not deleted!'];
+
         if ($id) {
-            $kelas_siswa = $this->crud->table($this->table_relasi1)->get_by_key(['kelas_id' => $id]);
-            $users_mapel_kelas = $this->crud->table($this->table_relasi2)->get_by_key(['kelas_id' => $id]);
-            $raport = $this->crud->table($this->table_relasi3)->get_by_key(['kelas_id' => $id]);
+            $this->db->where('kelas_id', $id);
+            $this->db->delete($this->table_relasi1);
 
-            if (!empty($kelas_siswa)) {
-                $this->crud->table($this->table_relasi1)->delete(['kelas_id' => $id]);
-                $this->crud->table($this->table_relasi4)->delete(['nis' => $kelas_siswa->siswa_nis]);
-            }
-            if (!empty($users_mapel_kelas)) {
-                $this->crud->table($this->table_relasi2)->delete(['kelas_id' => $id]);
-            }
-            if (!empty($raport)) {
-                $this->crud->table($this->table_relasi3)->delete(['kelas_id' => $id]);
-            }
+            $this->db->where('kelas_id', $id);
+            $this->db->delete($this->table_relasi2);
 
-            $this->crud->table($this->table)->delete(['id' => $id]);
+            $this->db->where('kelas_id', $id);
+            $this->db->delete($this->table_relasi3);
 
-            $status = ['success' => 'Success: Data deleted!'];
-        } else {
-            $status = ['error' => 'Error: Data not deleted!'];
+            $this->db->where('id', $id);
+            $this->db->delete($this->table);
+
+            $response = ['success' => 'Success: Data deleted!'];
         }
-        echo json_encode($status);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $response = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $response = ['success' => 'Success: Data deleted!'];
+        }
+
+        echo json_encode($response);
     }
+
 
     public function bulk_delete()
     {
         $array_id = $this->input->post('array_id');
-        $siswa = []; // Inisialisasi array $siswa di luar loop
+        $this->db->trans_start();
 
-        foreach ($array_id as $id) {
-            $delete[] = $this->crud->table($this->table)->get_by_key(['id' => $id]);
-            $kelas_siswa[] = $this->crud->table($this->table_relasi1)->get_by_key_with_result(['kelas_id' => $id]);
-            $users_mapel_kelas[] = $this->crud->table($this->table_relasi2)->get_by_key_with_result(['kelas_id' => $id]);
-            $raport[] = $this->crud->table($this->table_relasi3)->get_by_key_with_result(['kelas_id' => $id]);
+        $response = ['error' => 'Error: Data cannot be deleted!'];
 
-            if (!empty($delete)) {
+        if (!empty($array_id)) {
 
-                if (!empty($kelas_siswa)) {
-                    foreach ($kelas_siswa as $subarray) {
-                        foreach ($subarray as $data) {
-                            $siswa_nis = $data->siswa_nis;
-                            $siswa_nis_exists = false;
-                            foreach ($siswa as $existing_siswa) {
-                                if ($existing_siswa->nis === $siswa_nis) {
-                                    $siswa_nis_exists = true;
-                                    break;
-                                }
-                            }
-                            if (!$siswa_nis_exists) {
-                                $siswa[] = $this->crud->table($this->table_relasi4)->get_by_key(['nis' => $data->siswa_nis]);
-                            }
-                        }
+            $this->db->where_in('id', $array_id);
+            $this->db->delete($this->table);
 
-                        $this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-                    }
-                }
+            $this->db->where_in('kelas_id', $array_id);
+            $this->db->delete($this->table_relasi1);
 
-                if (!empty($siswa)) {
-                    foreach ($siswa as $data) {
+            $this->db->where_in('kelas_id', $array_id);
+            $this->db->delete($this->table_relasi2);
 
-                        $this->crud->table($this->table_relasi4)->delete(['nis' => $data->nis]);
-                    }
-                }
-
-                if (!empty($users_mapel_kelas)) {
-                    foreach ($users_mapel_kelas as $subarray) {
-                        foreach ($subarray as $data) {
-                            $this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-                        }
-                    }
-                }
-                if (!empty($raport)) {
-                    foreach ($raport as $subarray) {
-                        foreach ($subarray as $data) {
-                            $this->crud->table($this->table_relasi2)->delete(['mapel_id' => $data->mapel_id]);
-                        }
-                    }
-                }
-
-                $this->crud->table($this->table)->delete(['id' => $id]);
-                $status = ['success' => 'Success: Data deleted!'];
-            } else {
-                $status = ['error' => 'Error: Data not deleted!'];
-            }
+            $this->db->where_in('kelas_id', $array_id);
+            $this->db->delete($this->table_relasi3);
         }
-        echo json_encode($siswa);
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $response = ['error' => 'Error: Data not deleted due to a transaction error!'];
+        } else {
+            $response = ['success' => 'Success: Data deleted!'];
+        }
+
+        echo json_encode($response);
     }
 
 
