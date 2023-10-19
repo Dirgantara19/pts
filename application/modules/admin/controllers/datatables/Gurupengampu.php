@@ -89,7 +89,7 @@ class Gurupengampu extends MY_Controller
                 }
                 $spreadsheet = $reader->load($file['tmp_name']);
                 $sheetdata = $spreadsheet->getActiveSheet()->toArray();
-                $defaultcol = 6;
+                $defaultcol = 5;
                 $nullcell = [];
                 $col_eliminate = [];
                 $data = [];
@@ -138,10 +138,9 @@ class Gurupengampu extends MY_Controller
                         ];
                     } else {
                         for ($i = 1; $i < count($sheetdata); $i++) {
-                            $nip = $sheetdata[$i][2];
-                            $nik = $sheetdata[$i][3];
-                            $mapel = $sheetdata[$i][4];
-                            $kelas = $sheetdata[$i][5];
+                            $nip_or_nik = $sheetdata[$i][2];
+                            $mapel = $sheetdata[$i][3];
+                            $kelas = $sheetdata[$i][4];
 
                             $mapel_slug = url_title($mapel, 'dash', true);
                             $kelas_slug = url_title($kelas, 'dash', true);
@@ -152,7 +151,7 @@ class Gurupengampu extends MY_Controller
                             $mapel_row = $this->crud->table('mapel')->get_by_key(['slug' => $mapel_slug]);
                             $mapel_id = $mapel_row->id;
 
-                            $user_row = $this->crud->table('users')->get_by_key(['nip' => $nip, 'nik' => $nik]);
+                            $user_row = $this->crud->table('users')->get_by_key(['nip_or_nik' => $nip_or_nik]);
                             $user_id = $user_row->id;
 
 
@@ -164,8 +163,19 @@ class Gurupengampu extends MY_Controller
                         }
 
                         if (!empty($data)) {
-                            $this->db->insert_batch($this->table, $data);
-                            $response = ['success' => 'Success: Data record!.'];
+                            $existingData = $this->checkForDuplicates($data);
+
+                            if (!empty($existingData)) {
+                                $response = [
+                                    'error' => 'Error: Some data already exist.',
+                                    'type' => 4,
+                                    'problem' => 'Some data already exist.',
+                                    'solution' => $existingData,
+                                ];
+                            } else {
+                                $this->db->insert_batch($this->table, $data);
+                                $response = ['success' => 'Success: Data record!.'];
+                            }
                         } else {
                             $response = ['error' => 'Error: Data is empty.'];
                         }
@@ -179,6 +189,34 @@ class Gurupengampu extends MY_Controller
 
         echo json_encode($response);
     }
+
+
+    private function checkForDuplicates($data)
+    {
+        $existingData = [];
+
+        foreach ($data as $row) {
+            $user_id = $row['user_id'];
+            $mapel_id = $row['mapel_id'];
+            $kelas_id = $row['kelas_id'];
+
+            $query = $this->db->where('user_id', $user_id)
+                ->where('mapel_id', $mapel_id)
+                ->where('kelas_id', $kelas_id)
+                ->get($this->table);
+
+            if ($query->num_rows() > 0) {
+                $existingData[] = $row;
+            }
+        }
+
+        return $existingData;
+    }
+
+
+
+
+
 
     public function delete()
     {

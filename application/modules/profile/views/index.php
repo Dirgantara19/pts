@@ -89,7 +89,7 @@
 <script type="text/javascript">
 let title_toastr = "User Information";
 $.ajax({
-    url: '<?= base_url() . 'profile/user_info'; ?>',
+    url: '<?= site_url('profile/user_info'); ?>',
     type: 'get',
     dataType: 'json',
     success: function(data) {
@@ -121,7 +121,7 @@ $('#form').submit(function(e) {
     var formData = new FormData(this);
 
     $.ajax({
-        url: '<?= base_url() . 'profile/save'; ?>',
+        url: '<?= site_url('profile/save'); ?>',
         type: 'POST',
         dataType: 'json',
         data: formData,
@@ -163,7 +163,7 @@ $('.deleteimg').on('click', function() {
     let nameFile = 'gambar.png';
 
     $.ajax({
-        url: '<?= base_url() . 'profile/default_profile'; ?>',
+        url: '<?= site_url('profile/default_profile'); ?>',
         type: 'post',
         data: {
             img: nameFile

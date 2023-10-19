@@ -38,7 +38,7 @@
                 ],
             },
             ajax: {
-                url: "<?= base_url('guru/datatables/nilai/ajax_list'); ?>",
+                url: "<?= site_url('guru/datatables/nilai/ajax_list'); ?>",
                 type: "POST",
                 data: function(d) {
                     getAjaxData(d);
@@ -98,7 +98,7 @@
             let nilai = $('[name="' + data.raport_id + '"]').val();
 
 
-            $.post("<?= base_url('guru/datatables/nilai/update_nilai_by_id'); ?>", {
+            $.post("<?= site_url('guru/datatables/nilai/update_nilai_by_id'); ?>", {
                 'id': data.raport_id,
                 'nilai': nilai
             }, function(response) {
@@ -112,7 +112,7 @@
                         toastr['error'](response.error, title_toastr);
                     }
 
-                }, 300)
+                }, 2000)
 
             }, 'json');
 

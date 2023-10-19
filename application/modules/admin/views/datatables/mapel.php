@@ -45,7 +45,7 @@
 
                         var $a = $("<a>");
                         $a.attr("href",
-                            '<?= base_url('admin/export/mapel'); ?>');
+                            '<?= site_url('admin/export/mapel'); ?>');
                         $("body").append($a);
                         $a[0].click();
                         $a.remove();
@@ -58,7 +58,7 @@
             },
             'responsive': true,
             'ajax': {
-                'url': "<?= base_url('admin/datatables/mapel/ajax_list'); ?>",
+                'url': "<?= site_url('admin/datatables/mapel/ajax_list'); ?>",
                 'type': 'post'
             },
             'deferRender': true,
@@ -111,7 +111,7 @@
                     $.ajax({
                         type: 'post',
                         dataType: 'json',
-                        url: '<?= base_url('admin/datatables/mapel/delete'); ?>',
+                        url: '<?= site_url('admin/datatables/mapel/delete'); ?>',
                         data: {
                             id: data.id
                         },
@@ -146,7 +146,7 @@
             let data = table.row(e.target.closest('tr')).data();
 
             $.ajax({
-                url: "<?= base_url('admin/datatables/mapel/get_id'); ?>",
+                url: "<?= site_url('admin/datatables/mapel/get_id'); ?>",
                 data: {
                     id: data.id
                 },
@@ -215,7 +215,7 @@
             $.ajax({
                 type: 'post',
                 dataType: 'json',
-                url: '<?= base_url('admin/datatables/mapel/save'); ?>',
+                url: '<?= site_url('admin/datatables/mapel/save'); ?>',
                 data: dataform,
                 success: function(data) {
                     modal.modal('hide');
@@ -234,7 +234,6 @@
         });
 
 
-
         $("#form-import").on("submit", function(event) {
             event.preventDefault();
             let formData = new FormData($(this)[0]);
@@ -248,86 +247,27 @@
             $.ajax({
                 type: 'post',
                 dataType: 'json',
-                url: '<?= base_url('admin/datatables/mapel/import'); ?>',
+                url: '<?= site_url('admin/datatables/mapel/import'); ?>',
                 data: formData,
                 contentType: false,
                 processData: false,
                 success: function(response) {
 
-                    setTimeout(function() {
-
-                        submitButton.prop('disabled', false);
-
-                        if (response.success) {
-                            reload();
-                            toastr["success"](response.success, title_toastr);
-                        } else if (response.error) {
-                            if (response.problem) {
-
-                                if (Array.isArray(response.solution)) {
-                                    var colToFit = [];
-                                    var cellsToEliminate = [];
-                                    var existingData = [];
-                                    for (var i = 0; i < response.solution.length; i++) {
-                                        let data = response.solution[i];
-                                        let col = data.column;
-                                        if (data.exists_data) {
-                                            let exists_data = data.exists_data;
-                                            existingData.push(exists_data);
-
-                                        } else if (data.row) {
-                                            let row = data.row;
-                                            cellsToEliminate.push(col + '' + row);
-                                        } else {
-                                            colToFit.push(col);
-
-                                        }
-
-                                    }
-                                    toastr.options.timeOut = 6000;
-
-                                    if (response.type == 1) {
-
-                                        toastr["error"]("Cells to eliminate: " +
-                                            cellsToEliminate
-                                            .join(', '),
-                                            title_toastr);
-                                    } else if (response.type == 2) {
-                                        toastr["error"]("Cells to fill: " +
-                                            cellsToEliminate.join(
-                                                ', '),
-                                            title_toastr);
-                                    } else if (response.type == 3) {
-                                        toastr["error"]("Cells to fit: " + colToFit
-                                            .join(', '),
-                                            title_toastr);
-                                    } else if (response.type == 4) {
-                                        toastr["error"]("Existing Data: " + existingData
-                                            .join(', '),
-                                            title_toastr);
-                                    } else {
-                                        toastr["error"](response.solution,
-                                            title_toastr);
-                                    }
-
-                                }
-
-                                toastr.options.timeOut = 4000;
-                                toastr["error"](response.problem, title_toastr);
-                            }
-                            toastr.options.timeOut = 2000;
-                            toastr["error"](response.error, title_toastr);
-
-                        }
-
-
-
-                    }, 2000);
+                    showResponseToast(response);
 
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     toastr["error"](textStatus + ': ' + errorThrown, title_toastr);
+                },
+                complete: function(jqXHR, textStatus, errorThrown) {
+                    setTimeout(function() {
+                        submitButton.prop('disabled', false);
+
+                    }, 2000);
+
                 }
+
+
             });
 
             labelFile.text('Import file');
@@ -335,6 +275,35 @@
 
         });
 
+
+        function showResponseToast(response) {
+            setTimeout(function() {
+                if (response.success) {
+                    toastr["success"](response.success, title_toastr);
+                    reload()
+                } else if (response.error) {
+                    toastr["error"](response.error, title_toastr);
+
+                    if (response.problem) {
+                        toastr["error"](response.problem, title_toastr);
+                    }
+
+                    if (Array.isArray(response.solution)) {
+                        for (var i = 0; i < response.solution.length; i++) {
+                            let data = response.solution[i];
+                            if (data.column && data.row) {
+                                toastr["error"]("Cells: " + data.column + data.row,
+                                    title_toastr);
+                            } else if (data.exists_data) {
+                                toastr["error"]("Existing Data: " + data.exists_data, title_toastr);
+                            } else if (data.not_exists_data) {
+                                toastr["error"]("Not Existing Data: " + data.not_exists_data, title_toastr);
+                            }
+                        }
+                    }
+                }
+            }, 2000);
+        }
 
         let bulk_delete_trig = $('.bulk-delete');
 
@@ -369,7 +338,7 @@
                     $.ajax({
                         type: 'post',
                         dataType: 'json',
-                        url: '<?= base_url('admin/datatables/mapel/bulk_delete'); ?>',
+                        url: '<?= site_url('admin/datatables/mapel/bulk_delete'); ?>',
                         data: {
                             array_id: selected
                         },

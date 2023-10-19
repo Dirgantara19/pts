@@ -4,7 +4,7 @@
         <img src="" class="img-circle elevation-2 user-img" alt="User Image">
     </div>
     <div class="info">
-        <a href="<?= base_url('guru/profile'); ?>" class="d-block user-fullname-title"></a>
+        <a href="<?= site_url('guru/profile'); ?>" class="d-block user-fullname-title"></a>
     </div>
 </div>
 
@@ -15,13 +15,13 @@
         <!-- Divider -->
         <!-- Nav Item - Dashboard -->
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('guru/dashboard'); ?>">
+            <a class="nav-link" href="<?php echo site_url('guru/dashboard'); ?>">
                 <i class="nav-icon fas fa-home"></i>
                 <p>Dashboard</p>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('guru/siswa'); ?>">
+            <a class="nav-link" href="<?php echo site_url('guru/siswa'); ?>">
                 <i class="nav-icon fas fa-user-graduate"></i>
                 <p>
 
@@ -30,7 +30,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('guru/nilai'); ?>">
+            <a class="nav-link" href="<?php echo site_url('guru/nilai'); ?>">
                 <i class="nav-icon fas fa-sign"></i>
                 <p>
                     Nilai

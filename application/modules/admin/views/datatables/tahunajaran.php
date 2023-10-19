@@ -42,7 +42,7 @@ $(document).ready(function() {
         },
         'reponsive': true,
         'ajax': {
-            'url': "<?= base_url('admin/datatables/tahunajaran/ajax_list'); ?>",
+            'url': "<?= site_url('admin/datatables/tahunajaran/ajax_list'); ?>",
             'type': 'post'
         },
         'deferRender': true,
@@ -88,7 +88,7 @@ $(document).ready(function() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: '<?= base_url('admin/datatables/tahunajaran/delete'); ?>',
+                    url: '<?= site_url('admin/datatables/tahunajaran/delete'); ?>',
                     data: {
                         id: data.id
                     },
@@ -134,7 +134,7 @@ $(document).ready(function() {
 
 
         $.ajax({
-            url: "<?= base_url('admin/datatables/tahunajaran/get_id'); ?>",
+            url: "<?= site_url('admin/datatables/tahunajaran/get_id'); ?>",
             data: {
                 id: data.id
             },
@@ -217,7 +217,7 @@ $(document).ready(function() {
         event.preventDefault();
         let dataform = $(this).serialize();
 
-        $.post('<?= base_url('admin/datatables/tahunajaran/save'); ?>', dataform, {
+        $.post('<?= site_url('admin/datatables/tahunajaran/save'); ?>', dataform, {
                 dataType: 'json',
             })
             .done(function(data) {
@@ -273,7 +273,7 @@ $(document).ready(function() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: '<?= base_url('admin/datatables/tahunajaran/bulk_delete'); ?>',
+                    url: '<?= site_url('admin/datatables/tahunajaran/bulk_delete'); ?>',
                     data: {
                         array_id: selected
                     },

@@ -724,6 +724,24 @@ class Ion_auth_model extends CI_Model
 	}
 
 	/**
+	 * Identity teacher check
+	 *
+	 * @return bool
+	 * @author Dirgantara Praditya
+	 **/
+	public function identity_teacher_check($identity = '')
+	{
+		$this->trigger_events('identity_check');
+
+		if (empty($identity)) {
+			return FALSE;
+		}
+
+		return $this->db->where($this->identity_teacher_column, $identity)
+			->count_all_results($this->tables['users']) > 0;
+	}
+
+	/**
 	 * Insert a forgotten password key.
 	 *
 	 * @return bool
@@ -924,7 +942,7 @@ class Ion_auth_model extends CI_Model
 		// Validasi identitas
 		foreach ($batch_data as $data) {
 			$identity = $data['identity'];
-			if ($this->identity_check($identity)) {
+			if ($this->identity_teacher_check($identity)) {
 				$error = $this->set_error("Error: Data can't record, duplicate identity found.");
 				return ['error' => $error];
 			}
@@ -953,12 +971,11 @@ class Ion_auth_model extends CI_Model
 			$password = $this->hash_password($data['password'], $salt);
 
 			$users_data[] = array(
-				'username' => $identity,
+				'username' => $data['identity'],
 				'password' => $password,
-				'email' => $data['email'],
+				'email' => $data['nip_or_nik'],
 				'full_name' => $data['full_name'],
-				'nip' => $data['nip'],
-				'nik' => $data['nik'],
+				'nip_or_nik' => $data['nip_or_nik'],
 				'img'      => 'gambar.png',
 				'ip_address' => $ip_address,
 				'created_on' => time(),
@@ -1020,8 +1037,7 @@ class Ion_auth_model extends CI_Model
 		$this->trigger_events('extra_where');
 
 		$query = $this->db->select($this->identity_column . ', email, id, password, active, last_login')
-			->where($this->identity_column, $identity)
-			->or_where($this->identity_admin_column1, $identity)
+			->where($this->identity_admin_column1, $identity)
 			->or_where($this->identity_admin_column2, $identity)
 			->or_where($this->identity_teacher_column, $identity)
 			->limit(1)

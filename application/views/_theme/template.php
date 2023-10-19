@@ -172,7 +172,7 @@
     });
 
     function user_info() {
-        $.get("<?= base_url('profile/user_info'); ?>", function(data) {
+        $.get("<?= site_url('profile/user_info'); ?>", function(data) {
             $('.user-img').attr('src', '<?= $theme_url . 'img/profile/'; ?>' + data.img);
             $('.user-fullname-title').text(data.full_name);
         }, 'json');
@@ -197,7 +197,7 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="<?= base_url('admin'); ?>" class="brand-link">
+            <a href="<?= site_url(); ?>" class="brand-link">
                 <img src="{theme_url}img/logosmkn1bantul.png" alt="SMKn 1 Bantul"
                     class="brand-image img-circle elevation-3">
 
@@ -233,18 +233,10 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <?php $segment1 = $this->uri->segment(1); ?>
-                                <?php $segment2 = $this->uri->segment(2); ?>
-
-                                <li class="breadcrumb-item"><a
-                                        href="<?= ($segment1) ? ucwords($segment1) : ''; ?>"><?php if ($segment1) {
-                                                                                                                        echo ucwords($segment1);
-                                                                                                                    } ?></a>
+                                <li class="breadcrumb-item"><a href=""><?= ucfirst($this->uri->segment(1)); ?></a>
                                 </li>
                                 <li class="breadcrumb-item"><a
-                                        href="<?= ($segment2) ? ucwords($segment2) : ''; ?>"><?php if ($segment2) {
-                                                                                                                        echo ucwords($segment2);
-                                                                                                                    } ?></a>
+                                        href="<?= ($this->uri->segment(2)) ? $this->uri->segment(2) : ''; ?>"><?= ($this->uri->segment(2)) ? ucfirst($this->uri->segment(2)): ''; ?></a>
                                 </li>
                             </ol>
 
@@ -296,7 +288,7 @@
                     <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="<?= base_url('auth/logout'); ?>">Logout</a>
+                        <a class="btn btn-primary" href="<?= site_url('auth/logout'); ?>">Logout</a>
                     </div>
                 </div>
             </div>

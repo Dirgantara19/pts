@@ -4,7 +4,7 @@
         <img src="" class="img-circle elevation-2 user-img" alt="User Image">
     </div>
     <div class="info">
-        <a href="<?= base_url('admin/profile'); ?>" class="d-block user-fullname-title"></a>
+        <a href="<?= site_url('admin/profile'); ?>" class="d-block user-fullname-title"></a>
     </div>
 </div>
 
@@ -13,25 +13,25 @@
 <nav class="mt-2">
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/dashboard'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/dashboard'); ?>">
                 <i class="nav-icon fas fa-home"></i>
                 <p>Dashboard</p>
             </a>
         </li>
         <!-- <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/users'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/users'); ?>">
                 <i class="nav-icon fas fa-users"></i>
                 <p>{lang_users}</p>
             </a>
         </li> -->
         <!-- <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/gurupengampu'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/gurupengampu'); ?>">
                 <i class="nav-icon fas fa-chalkboard-teacher"></i>
                 <p>Guru</p>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/siswa'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/siswa'); ?>">
                 <i class="nav-icon fas fa-user-graduate"></i>
                 <p>
 
@@ -40,7 +40,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/kelas'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/kelas'); ?>">
                 <i class="nav-icon fas fa-school"></i>
                 <p>
 
@@ -49,7 +49,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/mapel'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/mapel'); ?>">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
                     Mapel
@@ -67,13 +67,13 @@
             </a>
             <ul class="nav nav-treeview">
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/gurupengampu'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/gurupengampu'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>Guru</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/siswa'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/siswa'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>
 
@@ -82,7 +82,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/kelas'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/kelas'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>
 
@@ -91,7 +91,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/mapel'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/mapel'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>
                             Mapel
@@ -101,14 +101,14 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/users'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/users'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>{lang_users}</p>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo base_url('admin/tahunajaran'); ?>">
+                    <a class="nav-link" href="<?php echo site_url('admin/tahunajaran'); ?>">
                         <i class="far fa-circle nav-icon"></i>
                         <p>
 
@@ -122,7 +122,7 @@
         <div class="divider"></div>
 
         <li class="nav-item">
-            <a class="nav-link" href="<?php echo base_url('admin/nilai'); ?>">
+            <a class="nav-link" href="<?php echo site_url('admin/nilai'); ?>">
                 <i class="nav-icon fas fa-sign"></i>
                 <p>
                     Nilai

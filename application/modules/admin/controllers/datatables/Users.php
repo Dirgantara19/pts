@@ -57,6 +57,8 @@ class Users extends MY_Controller
 			$id = $this->input->post('id');
 			$password = $this->input->post('password');
 
+			$this->db->trans_begin();
+
 			if (empty($id)) {
 				$this->form_validation->set_rules('full_name', 'Full Name', 'trim|required');
 				$this->form_validation->set_rules('password', 'Password', 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|max_length[' . $this->config->item('max_password_length', 'ion_auth') . ']|matches[password_confirm]');
@@ -68,10 +70,9 @@ class Users extends MY_Controller
 			}
 
 			if ($this->form_validation->run() == true) {
-
 				$data = array(
 					'full_name' => ucwords($this->input->post('full_name'), '-'),
-					'nip_or_nik'       => $this->input->post('nip_or_nik'),
+					'nip_or_nik' => $this->input->post('nip_or_nik'),
 					'ip_address' => $this->input->ip_address()
 				);
 
@@ -83,25 +84,34 @@ class Users extends MY_Controller
 					$status = ['success' => 'Success: Data update!'];
 				} else {
 					$nip_or_nik = strtolower($this->input->post('nip_or_nik'));
-
 					$identity = $nip_or_nik;
 					$additional_data = array(
 						'full_name' => ucwords($this->input->post('full_name'), '-'),
-						'nip_or_nik'       => $this->input->post('nip_or_nik'),
-						'img'       => 'gambar.png',
+						'nip_or_nik' => $this->input->post('nip_or_nik'),
+						'img' => 'gambar.png',
 					);
 					$this->ion_auth->register($identity, $password, $nip_or_nik, $additional_data);
 					$status = ['success' => 'Success: Data insert!'];
 				}
+
+				if ($this->db->trans_status() === FALSE) {
+					$this->db->trans_rollback();
+					$status = ['error' => 'Transaction failed'];
+				} else {
+					$this->db->trans_commit();
+				}
 			} else {
+				$this->db->trans_rollback();
 				$errors = validation_errors();
 				$status = ['errors' => $errors];
 			}
+
 			echo json_encode($status);
 		} else {
 			redirect('admin/users');
 		}
 	}
+
 
 
 	public function import()
@@ -127,7 +137,7 @@ class Users extends MY_Controller
 				$spreadsheet = $reader->load($file['tmp_name']);
 				$sheetdata = $spreadsheet->getActiveSheet()->toArray();
 
-				$defaultcol = 6;
+				$defaultcol = 4;
 				$nullcell = [];
 				$col_eliminate = [];
 				$data = [];
@@ -181,9 +191,9 @@ class Users extends MY_Controller
 						];
 					} else {
 						for ($i = 1; $i < $cellcount; $i++) {
+							$nip_or_nik = $sheetdata[$i][1];
 							$password = $sheetdata[$i][2];
 							$full_name = $sheetdata[$i][3];
-							$nip_or_nik = $sheetdata[$i][4];
 
 							$data[] = array(
 								'identity'     => $nip_or_nik,
@@ -196,10 +206,12 @@ class Users extends MY_Controller
 						if (!empty($data)) {
 
 							$record = $this->ion_auth->register_batch($data);
-							if ($record['error']) {
-								$response = ['error' => 'Error: ' . $record['error']];
-							} else {
+							if (is_array($record) && isset($record['error'])) {
+								$response = ['error' => $record['error']];
+							} else if ($record) {
 								$response = ['success' => 'Success: Data record!.'];
+							} else {
+								$response = ['error' => 'An unknown error occurred.'];
 							}
 						} else {
 							$response = ['error' => 'Error: Data is empty.'];

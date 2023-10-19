@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -56,5 +56,3 @@ $route['translate_uri_dashes'] = FALSE;
 $route['backend'] = 'backend/dashboard';
 $route['admin'] = 'admin/dashboard';
 $route['guru'] = 'guru/dashboard';
-
-$route['richfilemanager/(:any)'] = 'richfilemanager/\$1';

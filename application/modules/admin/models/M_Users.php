@@ -120,6 +120,45 @@ class M_Users extends CI_Model
         return json_encode($response);
     }
 
+    public function export()
+    {
+        $this->get_query();
+        $result = $this->db->get('users')->result();
+
+        $data = $this->data_structure_export($result);
+
+        return $data;
+    }
+
+    private function data_structure_export($result)
+    {
+
+        $admin_group = $this->config->item('admin_group', 'ion_auth');
+        $programmer_group = $this->config->item('programmer_group', 'ion_auth');
+
+        $data = array();
+        $no = 1;
+
+        foreach ($result as $user) {
+            $groups_exception = [$admin_group, $programmer_group];
+            $groups_users_check = $this->ion_auth->in_group($groups_exception, $user->id);
+            $users_groups = $this->ion_auth->get_users_groups($user->id)->result();
+            foreach ($users_groups as $group) {
+                if ($groups_users_check == false) {
+                    $data[] = [
+                        'no' => $no++,
+                        'nip_or_nik' => $user->nip_or_nik,
+                        'password' => 'dirahasiakan',
+                        'full_name' => $user->full_name,
+                    ];
+                }
+            }
+        }
+
+
+
+        return $data;
+    }
 
     private function data_structure($result)
     {

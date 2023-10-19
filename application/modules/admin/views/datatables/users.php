@@ -50,7 +50,7 @@ $(document).ready(function() {
                     action: function(e, dt, node, config) {
                         var $a = $("<a>");
                         $a.attr("href",
-                            '<?= base_url('admin/export/users'); ?>');
+                            '<?= site_url('admin/export/users'); ?>');
                         $("body").append($a);
                         $a[0].click();
                         $a.remove();
@@ -65,7 +65,7 @@ $(document).ready(function() {
             ],
         },
         ajax: {
-            url: '<?php echo base_url('admin/datatables/users/ajax_list'); ?>',
+            url: '<?php echo site_url('admin/datatables/users/ajax_list'); ?>',
             type: 'post',
 
         },
@@ -130,7 +130,7 @@ $(document).ready(function() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: '<?= base_url('admin/datatables/users/delete'); ?>',
+                    url: '<?= site_url('admin/datatables/users/delete'); ?>',
                     data: {
                         id: data.id
                     },
@@ -165,7 +165,7 @@ $(document).ready(function() {
         let data = table.row(e.target.closest('tr')).data();
 
         $.ajax({
-            url: "<?= base_url('admin/datatables/users/get_id'); ?>",
+            url: "<?= site_url('admin/datatables/users/get_id'); ?>",
             data: {
                 id: data.id,
             },
@@ -213,7 +213,7 @@ $(document).ready(function() {
         isProcessing = true;
         let data = table.row(e.target.closest('tr')).data();
 
-        $.post('<?= base_url('admin/datatables/users/deactivate'); ?>', {
+        $.post('<?= site_url('admin/datatables/users/deactivate'); ?>', {
                 id: data.id
             }, function(data) {
                 reload();
@@ -239,7 +239,7 @@ $(document).ready(function() {
         let data = table.row(e.target.closest('tr')).data();
 
 
-        $.post('<?= base_url('admin/datatables/users/activate'); ?>', {
+        $.post('<?= site_url('admin/datatables/users/activate'); ?>', {
                 id: data.id
             }, function(data) {
                 reload();
@@ -314,7 +314,7 @@ $(document).ready(function() {
         $.ajax({
             type: 'post',
             dataType: 'json',
-            url: '<?= base_url('admin/datatables/users/save'); ?>',
+            url: '<?= site_url('admin/datatables/users/save'); ?>',
             data: dataform,
 
             success: function(data) {
@@ -333,7 +333,6 @@ $(document).ready(function() {
         });
 
     });
-
     $("#form-import").on("submit", function(event) {
         event.preventDefault();
         let formData = new FormData($(this)[0]);
@@ -347,74 +346,27 @@ $(document).ready(function() {
         $.ajax({
             type: 'post',
             dataType: 'json',
-            url: '<?= base_url('admin/datatables/users/import'); ?>',
+            url: '<?= site_url('admin/datatables/users/import'); ?>',
             data: formData,
             contentType: false,
             processData: false,
-            success: function(data) {
-                setTimeout(function() {
+            success: function(response) {
 
-                    submitButton.prop('disabled', false);
-
-                    if (data.success) {
-                        reload();
-                        toastr["success"](data.success, title_toastr);
-                    } else if (data.error) {
-                        if (data.problem) {
-
-                            if (Array.isArray(data.solution)) {
-                                var colToFit = [];
-                                var cellsToEliminate = [];
-
-                                for (var i = 0; i < data.solution.length; i++) {
-                                    let cells = data.solution[i];
-                                    let col = cells.column;
-                                    if (cells.row) {
-                                        let row = cells.row;
-                                        cellsToEliminate.push(col + '' + row);
-                                    } else {
-                                        colToFit.push(col);
-
-                                    }
-
-                                }
-                                toastr.options.timeOut = 6000;
-
-                                if (data.type == 1) {
-
-                                    toastr["error"]("Cells to eliminate: " +
-                                        cellsToEliminate
-                                        .join(', '),
-                                        title_toastr);
-                                } else if (data.type == 2) {
-                                    toastr["error"]("Cells to fill: " +
-                                        cellsToEliminate.join(
-                                            ', '),
-                                        title_toastr);
-                                } else if (data.type == 3) {
-                                    toastr["error"]("Cells to fit: " + colToFit
-                                        .join(', '),
-                                        title_toastr);
-                                } else {
-                                    toastr["error"](data.solution, title_toastr);
-                                }
-
-                            }
-
-                            toastr.options.timeOut = 4000;
-                            toastr["error"](data.problem, title_toastr);
-                        }
-                        toastr.options.timeOut = 2000;
-                        toastr["error"](data.error, title_toastr);
-
-                    }
-
-                }, 2000)
+                showResponseToast(response);
 
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 toastr["error"](textStatus + ': ' + errorThrown, title_toastr);
+            },
+            complete: function(jqXHR, textStatus, errorThrown) {
+                setTimeout(function() {
+                    submitButton.prop('disabled', false);
+
+                }, 2000);
+
             }
+
+
         });
 
         labelFile.text('Import file');
@@ -423,6 +375,34 @@ $(document).ready(function() {
     });
 
 
+    function showResponseToast(response) {
+        setTimeout(function() {
+            if (response.success) {
+                toastr["success"](response.success, title_toastr);
+                reload()
+            } else if (response.error) {
+                toastr["error"](response.error, title_toastr);
+
+                if (response.problem) {
+                    toastr["error"](response.problem, title_toastr);
+                }
+
+                if (Array.isArray(response.solution)) {
+                    for (var i = 0; i < response.solution.length; i++) {
+                        let data = response.solution[i];
+                        if (data.column && data.row) {
+                            toastr["error"]("Cells: " + data.column + data.row,
+                                title_toastr);
+                        } else if (data.exists_data) {
+                            toastr["error"]("Existing Data: " + data.exists_data, title_toastr);
+                        } else if (data.not_exists_data) {
+                            toastr["error"]("Not Existing Data: " + data.not_exists_data, title_toastr);
+                        }
+                    }
+                }
+            }
+        }, 2000);
+    }
 
 
 
@@ -460,7 +440,7 @@ $(document).ready(function() {
                 $.ajax({
                     type: 'post',
                     dataType: 'json',
-                    url: '<?= base_url('admin/datatables/users/bulk_delete'); ?>',
+                    url: '<?= site_url('admin/datatables/users/bulk_delete'); ?>',
                     data: {
                         array_id: selected
                     },

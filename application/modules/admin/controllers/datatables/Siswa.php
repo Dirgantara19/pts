@@ -199,157 +199,124 @@ class Siswa extends MY_Controller
         echo json_encode($response);
     }
 
-
     public function import()
     {
         $file = $_FILES['filesiswa'];
 
-        if (isset($file['name']) && !empty($file['name']) && $file['error'] === 0) {
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-
-            if ($ext !== 'xls' && $ext !== 'xlsx' && $ext !== 'csv') {
-                $response = ['error' => 'Invalid file format .' . $ext . '. Only .xls, .xlsx, or .csv format is supported.'];
-            } else {
-
-                $spreadsheet = new Spreadsheet();
-
-                if ('xls' == $ext) {
-                    $reader = IOFactory::createReader('Xls');
-                } else if ('xlsx' == $ext) {
-                    $reader = IOFactory::createReader('Xlsx');
-                } else {
-                    $reader = IOFactory::createReader('Csv');
-                }
-                $spreadsheet = $reader->load($file['tmp_name']);
-                $sheetdata = $spreadsheet->getActiveSheet()->toArray();
-                $defaultcol = 4;
-                $nullcell = [];
-                $col_eliminate = [];
-                $datasiswa = [];
-                $datarelasi = [];
-
-                foreach ($sheetdata as $index => $cell) {
-                    $cellcount = count($cell);
-                    foreach ($cell as $colIndex => $cellValue) {
-                        if ($colIndex >= $defaultcol) {
-                            $columnLetter = chr($colIndex + 65);
-
-                            $col_eliminate[] = ['column' => $columnLetter, 'row' => $index + 1];
-                        } else if (is_null($cellValue)) {
-                            $columnLetter = chr($colIndex + 65);
-                            $nullcell[] = ['column' => $columnLetter, 'row' => $index + 1];
-                        }
-                    }
-                }
-                if ($cellcount > $defaultcol) {
-
-                    $response = [
-                        'error' => 'Error: Data is not in correct format.',
-                        'type' => 1, 'problem' => 'Ensure that the data has a minimum of ' . $defaultcol . ' columns.',
-                        'solution' => $col_eliminate
-                    ];
-                } else if ($cellcount < $defaultcol) {
-
-                    $col_diff = $defaultcol - $cellcount;
-
-                    $col_fit = [];
-                    for ($i = 0; $i < $col_diff; $i++) {
-                        $columnLetter = chr($cellcount + $i + 65);
-                        $col_fit[] = ['column' => $columnLetter];
-                    }
-
-                    $response = [
-                        'error' => 'Error: Data is not in correct format.',
-                        'type' => 3, 'problem' => 'Ensure that the data has a minimum of ' . $defaultcol . ' columns.',
-                        'solution' => $col_fit
-                    ];
-                } else {
-                    if (!empty($nullcell)) {
-                        $response = [
-                            'error' => 'Error: Data contains null value.',
-                            'type' => 2, 'problem' => 'Data null found',
-                            'solution' => $nullcell
-                        ];
-                    } else {
-                        for ($i = 1; $i < count($sheetdata); $i++) {
-
-                            $nis = $sheetdata[$i][1];
-                            $nama = $sheetdata[$i][2];
-                            $kelas = $sheetdata[$i][3];
-
-                            $slug_kelas = url_title($kelas, 'dash', true);
-
-                            $query_kelas = $this->crud->table('kelas')->get_by_key(['slug' => $slug_kelas]);
-
-
-                            $datasiswa[] = array(
-                                'nis' => $nis,
-                                'nama' => $nama,
-                            );
-
-                            $datarelasi[] = [
-                                'kelas_slug' => $query_kelas->slug,
-                                'siswa_nis' => $nis,
-                            ];
-                        }
-
-
-                        if (!empty($datasiswa) && !empty($datarelasi)) {
-
-
-                            $kelas_data = $this->crud->table('kelas')->get_all();
-                            $kelas_id = array_column($kelas_data, 'id');
-                            $kelasNotExists = false;
-
-                            $siswa = $this->crud->table($this->table)->get_all();
-                            $siswa_nis = array_column($siswa, 'nis');
-                            $existing_data = [];
-                            $dataAlreadyExists = false;
-
-                            foreach ($datasiswa as $siswa) {
-                                if (in_array($siswa['nis'], $siswa_nis)) {
-                                    $dataAlreadyExists = true;
-                                    $existing_data[] = ['exists_data' => $siswa['nis']];
-                                }
-                            }
-
-                            foreach ($datarelasi as $kelas) {
-                                if (in_array($kelas['id'], $kelas_id)) {
-                                    $kelasNotExists = true;
-                                    $existing_data[] = ['exists_data' => $kelas];
-                                }
-                            }
-
-                            if ($dataAlreadyExists) {
-                                $response = [
-                                    'error' => 'Error: Some data already exist.',
-                                    'type' => 4,
-                                    'problem' => 'Some data already exist.',
-                                    'solution' => $existing_data,
-                                ];
-                            } else if ($kelasNotExists) {
-
-                                $response = [
-                                    'error' => 'Error: Some data kelas not exist.',
-                                    'problem' => 'Some data kelas not exist.',
-                                ];
-                            } else {
-                                $this->db->insert_batch($this->table, $datasiswa);
-                                $this->db->insert_batch($this->table_relasi1, $datarelasi);
-                                $response = ['success' => 'Success: Data record!.'];
-                            }
-                        } else {
-                            $response = ['error' => 'Error: Data is empty.'];
-                        }
-                    }
-                }
-            }
-        } else {
+        if (!isset($file['name']) || empty($file['name']) || $file['error'] !== 0) {
             $response = ['error' => 'Error: File not uploaded.'];
+            echo json_encode($response);
+            return;
         }
 
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
 
+        if (!in_array($ext, ['xls', 'xlsx', 'csv'])) {
+            $response = ['error' => 'Invalid file format: .' . $ext . '. Only .xls, .xlsx, or .csv format is supported.'];
+            echo json_encode($response);
+            return;
+        }
 
-        echo json_encode($response);
+        $spreadsheet = new Spreadsheet();
+        $reader = IOFactory::createReader(ucfirst($ext));
+
+        $spreadsheet = $reader->load($file['tmp_name']);
+        $sheetdata = $spreadsheet->getActiveSheet()->toArray();
+
+        $defaultcol = 4;
+        $nullcell = [];
+        $col_eliminate = [];
+        $datasiswa = [];
+        $datarelasi = [];
+
+        foreach ($sheetdata as $index => $cell) {
+            $cellcount = count($cell);
+
+            if ($cellcount < $defaultcol) {
+                $response = [
+                    'error' => 'Error: Data is not in correct format.',
+                    'problem' => 'Ensure that the data has a minimum of ' . $defaultcol . ' columns.',
+                ];
+                echo json_encode($response);
+                return;
+            } else if ($cellcount > $defaultcol) {
+                $response = [
+                    'error' => 'Error: Data is not in correct format.',
+                    'problem' => 'Ensure that the data has a maximun of ' . $defaultcol . ' columns.',
+                ];
+                echo json_encode($response);
+                return;
+            }
+
+            foreach ($cell as $colIndex => $cellValue) {
+                if ($colIndex >= $defaultcol) {
+                    $columnLetter = chr($colIndex + 65);
+                    $col_eliminate[] = ['column' => $columnLetter, 'row' => $index + 1];
+                } elseif (is_null($cellValue)) {
+                    $columnLetter = chr($colIndex + 65);
+                    $nullcell[] = ['column' => $columnLetter, 'row' => $index + 1];
+                }
+            }
+        }
+
+        if (!empty($nullcell)) {
+            $response = [
+                'error' => 'Error: Data contains null value.',
+                'problem' => 'Data null found',
+                'solution' => $nullcell,
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        foreach (array_slice($sheetdata, 1) as $row) {
+            $nis = $row[1];
+            $nama = $row[2];
+            $kelas = $row[3];
+            $slug_kelas = url_title($kelas, 'dash', true);
+            $query_kelas = $this->crud->table('kelas')->get_by_key(['slug' => $slug_kelas]);
+
+            $datasiswa[] = ['nis' => $nis, 'nama' => $nama];
+
+            if ($query_kelas) {
+                $datarelasi[] = ['kelas_id' => $query_kelas->id, 'siswa_nis' => $nis];
+            } else {
+                $response = [
+                    'error' => 'Error: Some data kelas not exist.',
+                    'problem' => 'Some data kelas not exist.',
+                    'solution' => [['not_exists_data' => $slug_kelas]],
+                ];
+                echo json_encode($response);
+                return;
+            }
+        }
+
+        if (empty($datasiswa)) {
+            $response = ['error' => 'Error: Data is empty.'];
+            echo json_encode($response);
+        } else {
+            $siswa = $this->crud->table($this->table)->get_all();
+            $siswa_nis = array_column($siswa, 'nis');
+
+            $existing_data = array_filter($datasiswa, function ($siswa) use ($siswa_nis) {
+                return in_array($siswa['nis'], $siswa_nis);
+            });
+
+            if (!empty($existing_data)) {
+                $response = [
+                    'error' => 'Error: Some data already exist.',
+                    'problem' => 'Some data already exist.',
+                    'solution' => array_map(function ($siswa) {
+                        return ['exists_data' => $siswa['nis']];
+                    }, $existing_data),
+                ];
+                echo json_encode($response);
+            } else {
+                $this->db->insert_batch($this->table, $datasiswa);
+                $this->db->insert_batch($this->table_relasi1, $datarelasi);
+                $response = ['success' => 'Success: Data record!.'];
+                echo json_encode($response);
+            }
+        }
     }
 }

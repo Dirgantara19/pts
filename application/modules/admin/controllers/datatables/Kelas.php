@@ -191,7 +191,7 @@ class Kelas extends MY_Controller
 
                     $response = [
                         'error' => 'Error: Data is not in correct format.',
-                        'type' => 1, 'problem' => 'Ensure that the data has a minimum of' . $defaultcol . 'columns.',
+                        'type' => 1, 'problem' => 'Ensure that the data has a minimum of ' . $defaultcol . 'c olumns.',
                         'solution' => $col_eliminate
                     ];
                 } else if ($cellcount < $defaultcol) {
@@ -206,7 +206,7 @@ class Kelas extends MY_Controller
 
                     $response = [
                         'error' => 'Error: Data is not in correct format.',
-                        'type' => 3, 'problem' => 'Ensure that the data has a minimum of' . $defaultcol . 'columns.',
+                        'type' => 3, 'problem' => 'Ensure that the data has a minimum of ' . $defaultcol . ' columns.',
                         'solution' => $col_fit
                     ];
                 } else {

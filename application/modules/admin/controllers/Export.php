@@ -78,7 +78,7 @@ class Export extends MY_Controller
 
             exit;
         } else {
-            $this->sweetalert->setToastNew('success', 'Error: Data failed to export', $this->data['title_toastr']);
+            $this->sweetalert->setToastNew('error', 'Error: Data failed to export', $this->data['title_toastr']);
         }
         redirect('admin/kelas', 'refresh');
     }
@@ -88,25 +88,12 @@ class Export extends MY_Controller
     {
 
         $this->load->model('M_Users');
-        $sql = $this->M_Users->get_sql();
-        $data = $this->db->query($sql)->result();
-
-        $dataToExport = [];
-
-        $no = 1;
-        foreach ($data as $n) {
-
-            $dataToExport[] = [
-                'no' => $no++,
-                'username' => $n->username,
-                'password' => 'dirahasiakan',
-                'full_name' => $n->full_name,
-                'nip_or_nik' => $n->nip_or_nik,
-            ];
-        };
+        $dataToExport = $this->M_Users->export();
 
 
-        $columns = ['NO', 'EMAIL', 'PASSWORD', 'NAMA LENGKAP', 'NIP/NIK'];
+
+
+        $columns = ['NO', 'NIP/NIK', 'PASSWORD', 'NAMA LENGKAP'];
         $filename = 'example_users.xlsx';
 
         if ($dataToExport) {
@@ -119,7 +106,7 @@ class Export extends MY_Controller
             $writer->save('php://output');
             exit;
         } else {
-            $this->sweetalert->setToastNew('success', 'Error: Data failed to export', $this->data['title_toastr']);
+            $this->sweetalert->setToastNew('error', 'Error: Data failed to export', $this->data['title_toastr']);
         }
         redirect('admin/users', 'refresh');
     }
@@ -140,7 +127,7 @@ class Export extends MY_Controller
 
             $dataToExport[] = [
                 'no' => $no++,
-                'nama_guru' => $n->nama_guru,
+                'nama_guru' => $n->guru,
                 'nip_or_nik' => $n->nip_or_nik,
                 'mengajar' => $n->mengajar,
                 'kelas' => $n->kelas
@@ -161,7 +148,7 @@ class Export extends MY_Controller
             $writer->save('php://output');
             exit;
         } else {
-            $this->sweetalert->setToastNew('success', 'Error: Data failed to export', $this->data['title_toastr']);
+            $this->sweetalert->setToastNew('error', 'Error: Data failed to export', $this->data['title_toastr']);
         }
         redirect('admin/gurupengampu', 'refresh');
     }
@@ -198,7 +185,7 @@ class Export extends MY_Controller
             $writer->save('php://output');
             exit;
         } else {
-            $this->sweetalert->setToastNew('success', 'Error: Data failed to export', $this->data['title_toastr']);
+            $this->sweetalert->setToastNew('error', 'Error: Data failed to export', $this->data['title_toastr']);
         }
         redirect('admin/mapel', 'refresh');
     }
